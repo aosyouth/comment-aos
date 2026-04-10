@@ -3,99 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บอร์ดแสดงความคิดเห็น</title>
+    <title>AOS Board</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Kanit', sans-serif;
             overflow-x: hidden;
+            background: linear-gradient(135deg, #f5f7ff 0%, #eef2ff 100%);
+            min-height: screen;
         }
-        /* สไตล์พื้นฐานของวงรี */
+
+        /* ดีไซน์ฟองสบู่แบบ Glassmorphism */
         .comment-bubble {
-            border-radius: 9999px;
-            display: inline-flex;
+            border-radius: 50%;
+            display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 1.5rem 2.5rem;
-            min-width: 150px;
-            max-width: 280px;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
-            border: 2px solid rgba(255,255,255,0.6);
-            cursor: default;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border: 2px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 
+                inset 0 10px 20px rgba(255,255,255,0.4),
+                0 10px 25px rgba(0,0,0,0.05);
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
             position: relative;
-            z-index: 10;
-        }
-        
-        .comment-bubble:hover {
-            transform: scale(1.1) rotate(0deg) !important;
-            z-index: 50;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
         }
 
-        /* Container สำหรับการกระจายตัว */
+        /* เพิ่มแสงเงาให้ดูนูนเหมือนฟองสบู่ */
+        .comment-bubble::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 15%;
+            width: 20%;
+            height: 12%;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: rotate(-45deg);
+        }
+
+        .comment-bubble:hover {
+            transform: scale(1.1) !important;
+            z-index: 100;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.1);
+            backdrop-filter: blur(0px);
+            border-color: rgba(255, 255, 255, 1);
+        }
+
+        /* Container จัดวางฟองสบู่ */
         #commentsContainer {
             display: flex;
-            flex-direction: row; /* เรียงจากบนลงล่าง */
             flex-wrap: wrap;
             justify-content: center;
             align-items: center;
             gap: 2rem;
-            min-height: 60vh;
-            padding: 2rem;
+            min-height: 70vh;
+            padding: 3rem;
         }
 
-        .bubble-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin: 10px; 
+        /* แอนิเมชั่นการลอย */
+        @keyframes bubbleFloat {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(15px, -25px) scale(1.03); }
+            66% { transform: translate(-15px, -15px) scale(0.97); }
+            100% { transform: translate(0, 0) scale(1); }
         }
 
-        /* อนิเมชั่นลอยเบาๆ */
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
+        .animate-bubble {
+            animation: bubbleFloat 7s ease-in-out infinite;
         }
-        .animate-float {
-            animation: float 4s ease-in-out infinite;
+
+        .bubble-text {
+            word-break: break-word;
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
     </style>
-    
 </head>
-<body class="bg-gradient-to-br from-indigo-50 via-white to-purple-50 min-h-screen p-6">
+<body class="p-6">
     <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col items-center mb-16 text-center">
-            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-4">
+        <div class="flex flex-col items-center mb-12 text-center">
+            <h1 class="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-4">
                 ความคิดเห็น AOS
             </h1>
+
         </div>
 
         <div id="loading" class="flex flex-col items-center justify-center py-20">
-            <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-500"></div>
+            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
         </div>
 
-        <!-- พื้นที่แสดงวงรีแบบกระจายตัว -->
         <div id="commentsContainer">
-            <!-- ข้อมูลจะถูกโหลดที่นี่ -->
-        </div>
+            </div>
     </div>
 
     <script>
-        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxJ0cRyU7fjC8JFyVXqCkUf97Od49MkYnzWD1H1oJxoaPxY784BARQE7W8HFtWdNUOwXw/exec';
+        const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxNUZxRPMC9ADce5AodXgVtSMDgKCU7iKFqVFJSpwqeybmsNMAcVTJYykT1pbCuaDiQ-g/exec';
 
-        const colors = [
-            { bg: 'bg-blue-100', text: 'text-blue-700', border: 'border-blue-200' },
-            { bg: 'bg-pink-100', text: 'text-pink-700', border: 'border-pink-200' },
-            { bg: 'bg-purple-100', text: 'text-purple-700', border: 'border-purple-200' },
-            { bg: 'bg-amber-100', text: 'text-amber-700', border: 'border-amber-200' },
-            { bg: 'bg-emerald-100', text: 'text-emerald-700', border: 'border-emerald-200' },
-            { bg: 'bg-rose-100', text: 'text-rose-700', border: 'border-rose-200' },
-            { bg: 'bg-sky-100', text: 'text-sky-700', border: 'border-sky-200' },
-            { bg: 'bg-indigo-100', text: 'text-indigo-700', border: 'border-indigo-200' }
+        // โทนสีแบบใสๆ (Soft Pastel Glass)
+        const bubbleStyles = [
+            { bg: 'rgba(219, 234, 254, 0.6)', text: '#1e40af', border: 'rgba(191, 219, 254, 0.8)' },
+            { bg: 'rgba(252, 231, 243, 0.6)', text: '#9d174d', border: 'rgba(251, 207, 232, 0.8)' },
+            { bg: 'rgba(243, 232, 255, 0.6)', text: '#6b21a8', border: 'rgba(233, 213, 255, 0.8)' },
+            { bg: 'rgba(254, 243, 199, 0.6)', text: '#92400e', border: 'rgba(252, 211, 77, 0.8)' },
+            { bg: 'rgba(209, 250, 229, 0.6)', text: '#065f46', border: 'rgba(167, 243, 208, 0.8)' },
+            { bg: 'rgba(224, 242, 254, 0.6)', text: '#0369a1', border: 'rgba(186, 230, 253, 0.8)' }
         ];
 
         async function fetchComments() {
@@ -107,45 +125,62 @@
                 const data = await response.json();
                 loading.classList.add('hidden');
                 
-                if (data.length === 0) {
-                    container.innerHTML = '<p class="text-gray-400">ยังไม่มีข้อมูล</p>';
+                if (!data || data.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400">ยังไม่มีข้อมูลในระบบ</p>';
                     return;
                 }
 
-                // กลับลำดับข้อมูล: ให้ข้อความล่าสุด (ที่ปกติอยู่ท้าย Array) มาอยู่หน้าสุด
-                const reversedData = [...data].reverse();
+                // 1. นับจำนวนคำที่ซ้ำกัน
+                const counts = data.reduce((acc, item) => {
+                    const txt = item.text.trim();
+                    acc[txt] = (acc[txt] || 0) + 1;
+                    return acc;
+                }, {});
 
-                container.innerHTML = reversedData.map((item, index) => {
-                    // เลือกสีโดยใช้ index จากข้อมูลที่กลับด้านแล้ว
-                    const color = colors[index % colors.length];
+                // 2. แปลงเป็น Array เพื่อเรียงลำดับ (ล่าสุดอยู่หน้า แต่คำซ้ำโชว์ใบเดียว)
+                // เราจะดึงรายการคำที่ไม่ซ้ำกันมาแสดง
+                const uniqueTexts = Object.keys(counts);
+
+                container.innerHTML = uniqueTexts.map((text, index) => {
+                    const count = counts[text];
+                    const style = bubbleStyles[index % bubbleStyles.length];
                     
-                    // สุ่มค่าต่างๆ เพื่อความไม่เป็นระเบียบ
-                    const randomRotation = Math.floor(Math.random() * 10) - 5; 
-                    const randomYOffset = Math.floor(Math.random() * 40) - 20; 
-                    const randomDelay = (Math.random() * 2).toFixed(1); 
-                    const randomScale = (0.9 + Math.random() * 0.2).toFixed(2); 
+                    // 3. คำนวณขนาด (Base 140px + เพิ่มความใหญ่ตามจำนวนซ้ำ)
+                    const size = Math.min(140 + (count - 1) * 45, 380);
+                    
+                    // สุ่มจังหวะแอนิเมชั่น
+                    const duration = (Math.random() * 4 + 6).toFixed(2);
+                    const delay = (Math.random() * -10).toFixed(2);
 
                     return `
-                        <div class="bubble-wrapper animate-float" style="
-                            transform: translateY(${randomYOffset}px) scale(${randomScale});
-                            animation-delay: ${randomDelay}s;
+                        <div class="animate-bubble" style="
+                            animation-duration: ${duration}s;
+                            animation-delay: ${delay}s;
                         ">
-                            <div class="comment-bubble ${color.bg} ${color.border} ${color.text}" style="
-                                transform: rotate(${randomRotation}deg);
+                            <div class="comment-bubble" style="
+                                width: ${size}px;
+                                height: ${size}px;
+                                background-color: ${style.bg};
+                                border-color: ${style.border};
+                                color: ${style.text};
                             ">
-                                <span class="font-medium leading-tight">
-                                    ${escapeHtml(item.text)}
-                                </span>
+                                <div class="flex flex-col items-center justify-center p-6 w-full">
+                                    <span class="bubble-text font-medium leading-tight ${size < 180 ? 'text-sm' : 'text-base'}">
+                                        ${escapeHtml(text)}
+                                    </span>
+                                    ${count > 1 ? `
+                                        <div class="mt-2 px-2 py-0.5 bg-white/40 rounded-full text-[10px] font-bold">
+                                            × ${count}
+                                        </div>
+                                    ` : ''}
+                                </div>
                             </div>
-                            <p class="mt-3 text-[10px] text-gray-400 font-light tracking-widest uppercase">
-                                ${item.time || ''}
-                            </p>
                         </div>
                     `;
                 }).join('');
 
             } catch (error) {
-                loading.innerHTML = `<p class="text-red-400">Error: ${error.message}</p>`;
+                loading.innerHTML = `<p class="text-red-500 font-medium">เกิดข้อผิดพลาด: ${error.message}</p>`;
             }
         }
 
@@ -155,7 +190,11 @@
             return div.innerHTML;
         }
 
+        // โหลดข้อมูลครั้งแรก
         window.onload = fetchComments;
+        
+        // อัปเดตข้อมูลทุกๆ 10 วินาที (Optional)
+        setInterval(fetchComments, 10000);
     </script>
 </body>
 </html>
